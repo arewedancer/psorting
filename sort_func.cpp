@@ -23,9 +23,7 @@
 #include "merge_cilk.h"
 #include "merge_sort_cilk.h"
 #define data_size 11000000 
-//#define data_size 2100 
 #define col_size 5
-//#define col_size 1
 #define max_thread 100
 enum SORT_OPERATOR 
 {TB_COUNT=0,TB_SUM,TB_PERCENT,RANK,DENSERANK,NTILE};
@@ -121,7 +119,9 @@ class Util
 				if (current_type == top_bottom_param[1])
 				{
 					data[idx][result_idx_] = current_type;
-					memcpy(result[0], data[idx], col_size_ * sizeof(float));
+					//memcpy(result[0], data[idx], col_size_ * sizeof(float));
+					//safer when memory overlaps
+					memmove(result[0], data[idx], col_size_ * sizeof(float));
 					result++;
 				};
 				if (current_value == part + (remains > 0))
@@ -148,7 +148,8 @@ class Util
 			{
 				running_total += func_(data[idx], formula_args_);
 				data[idx][result_idx_] = current_type;
-				memcpy(result[0], data[idx], col_size_ * sizeof(float));
+				//memcpy(result[0], data[idx], col_size_ * sizeof(float));
+				memmove(result[0], data[idx], col_size_ * sizeof(float));
 				result++;				
 				if ( running_total > top_bottom_param[0] )
 				{
