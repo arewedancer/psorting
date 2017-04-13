@@ -1,3 +1,4 @@
+#include <cilk/cilk_api.h> 
 // sorts [xs,xe).  zs[0:xe-xs) is temporary buffer supplied by caller.
 // result is in [xs,xe) if inplace==true, otherwise in zs[0:xe-xs)
 template<typename T, typename Compare>
@@ -22,8 +23,11 @@ void parallel_merge_sort_cilk( T* xs, T* xe, T* zs, bool inplace, Compare cmp ) 
 }
 
 template<typename T, typename Compare>
-void parallel_merge_sort_cilkplus( T* xs, T* xe, Compare cmp ) { 
+void parallel_merge_sort_cilkplus( T* xs, T* xe, Compare cmp, int max_thread=0 ) { 
     T* zs = new T[xe-xs];
+		if (max_thread != 0)
+			__cilkrts_set_param("nworkers", max_thread);
+
     parallel_merge_sort_cilk( xs, xe, zs, true, cmp );
     delete[] zs; 
 }

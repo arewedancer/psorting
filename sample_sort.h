@@ -1,9 +1,12 @@
+#include "tbb/task_scheduler_init.h"
 template<typename T, typename Compare>
-void parallel_sample_sort( T* xs, T* xe, Compare cmp) {
+void parallel_sample_sort( T* xs, T* xe, Compare cmp, int max_thread=0) {
 	if( xe-xs<=SAMPLE_SORT_CUT_OFF ) {
 		//parallel_quicksort(xs,xe);
 		std::sort(xs, xe, cmp);
 	} else {
+		if (max_thread != 0)
+			tbb::task_scheduler_init init(max_thread);
 		size_t m = choose_number_of_bins(xe-xs);
 		size_t tally[M_MAX][M_MAX];
 		T* y = new T[xe-xs];
