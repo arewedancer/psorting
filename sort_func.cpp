@@ -24,7 +24,7 @@
 #include "merge_sort_cilk.h"
 #define data_size 11000000 
 #define col_size 5
-#define max_thread 100
+#define max_thread_ 100
 enum SORT_OPERATOR 
 {TB_COUNT=0,TB_SUM,TB_PERCENT,RANK,DENSERANK,NTILE};
 
@@ -245,7 +245,7 @@ class Util
 		template<typename S>
 			static int sort(float** data, const int data_size_, const int size_, const int measure_idx_, const int dim_sort_size_,
 					const int *sort_, const int *formula_args_, float (*func_)(const float* data, const int* args),
-					const int result_idx_, const bool asc, const int* top_bottom_param, const int top_bottom_psize_, S sort_type, const SORT_OPERATOR tb_type)
+					const int result_idx_, const bool asc, const int* top_bottom_param, const int top_bottom_psize_, S sort_type, const SORT_OPERATOR tb_type, int max_thread=0)
 			{
 				assert(data != NULL);
 				assert(data_size_ != 0);
@@ -255,7 +255,8 @@ class Util
 				assert(result_idx_ >0);
 				// calling sort
 				Functor cmp(size_, measure_idx_, dim_sort_size_, sort_, formula_args_, func_, asc);
-				sort_type(data, data+data_size_, cmp);
+	tbb::tick_count t0 = tbb::tick_count::now();
+				sort_type(data, data+data_size_, cmp, max_thread);
 				// summing for each partition
 				std::vector<double> sum; std::vector<int> index;
 				top_bottom_sum(data, data_size_, sum, index, formula_args_, func_, dim_sort_size_, sort_, tb_type);
@@ -271,12 +272,17 @@ class Util
 
 				if ( tb_type == NTILE || tb_type == TB_SUM )
 				{
-					return new_delete(data, data_size_, size_, inter_data);
+					int ret = new_delete(data, data_size_, size_, inter_data);
+					//return new_delete(data, data_size_, size_, inter_data);
+	tbb::tick_count t1 = tbb::tick_count::now();
+	std::cout << "freeing takes:" << (t1-t0).seconds() << std::endl;
+					return ret;
 				}else
 				{
 					return data_size_;
 				};
 			};
+
 };
 
 
@@ -289,12 +295,12 @@ int thread_func(float ** data)
 	int args[]={3};
 	int sort_size = 1;
 	int sort[] = {0};
-	int top_bottom_args[] = {30, 40, 30};
+	//int top_bottom_args[] = {30, 40, 30};
 	//int top_bottom_args[] = {300, 400, 300};
 	//int top_bottom_args[] = {4,0};
-	//int top_bottom_args[] = {10000};
+	int top_bottom_args[] = {50000};
 
-	int return_size = Util::sort(data, data_size, 5, 3, sort_size, sort, args, measure_func, 4, false, top_bottom_args, 3, parallel_merge_sort_tbb<float*, Functor>, TB_PERCENT); 
+	int return_size = Util::sort(data, data_size, 5, 3, sort_size, sort, args, measure_func, 4, false, top_bottom_args, 3, parallel_sample_sort<float*, Functor>, TB_SUM); 
 	tbb::tick_count t1 = tbb::tick_count::now();
 	std::cout << (t1-t0).seconds() << std::endl;
 	return return_size;
