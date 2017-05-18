@@ -7,8 +7,7 @@ void map_keys_to_bins( const T x[], size_t n, const T tree[], size_t m, bindex_t
 		size_t k = 0;
 		for( size_t j=0; j<d; ++j )
 		{
-			int r = cmp(x[i], tree[k])? 1 : 0; 
-			k = 2*k+2 - r;
+			k = 2*k+2 - cmp(x[i],tree[k]);
 		};
 		++freq[bindex[i] = k-(m-1)];
 	}
