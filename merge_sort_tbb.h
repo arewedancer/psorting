@@ -5,7 +5,7 @@ template<typename T, typename Compare>
 void parallel_merge_sort( T* xs, T* xe, T* zs, bool inplace, Compare cmp ) {
     const size_t SORT_CUT_OFF = 500;
     if( xe-xs<=SORT_CUT_OFF ) {
-        std::stable_sort( xs, xe, cmp );
+        std::sort( xs, xe, cmp );
         if( !inplace ) 
 				{
             std::move( xs, xe, zs );

@@ -21,7 +21,7 @@
 #include "bin_tbb.h"
 #include "repack_and_subsort_tbb.h"
 #include "sample_sort.h"
-#include "tbb/parallel_sort.h"
+//#include "tbb/parallel_sort.h"
 #include "RankOptions.hpp"
 
 inline bool is_null(double num)
@@ -30,7 +30,6 @@ inline bool is_null(double num)
 };
 
 struct Functor {
-	//const std::vector<long>& dim_cols;
 	const std::vector<long>& dim_cols;
 	const std::vector<long>& measure_cols;
 	inline explicit Functor(const std::vector<long>& dim_cols_, const std::vector<long>& measure_cols_):
@@ -56,6 +55,7 @@ struct Functor {
 			if ( a[std::abs(measure_cols[i])] == b[std::abs(measure_cols[i])] ) continue; 
 			return  (a[std::abs(measure_cols[i])]> b[std::abs(measure_cols[i])]) ^ (!std::signbit(measure_cols[i]));
 		}
+		return false;
 	};
 };
 
@@ -491,13 +491,13 @@ void Util::psum(RankOptions& rankOptions, std::vector<double>& sum, std::vector<
 	}
 	index.push_back(Pair(start,idx-1));sum.emplace_back(tmp_sum);
 };
-
+__attribute__((optimize("no-tree-vectorize")))
 char* Util::new_new(const long row, const long measure_col_cnt, const long dim_col_cnt)
 {
 	//std::cout << "new_new: row " << row <<" ," << col << std::endl;
 	//12 bytes padding for the header
 	long col = measure_col_cnt + dim_col_cnt;
-	char *storage = new char[ row * col * sizeof(double) + row * sizeof(double) + 12]; 
+	char *storage = new char[ row * col * sizeof(double) + row * sizeof(double) + 3 * sizeof(uint32_t)]; 
 	uint32_t* header = (uint32_t*) storage;
 	header[0] = (uint32_t) row;
 	header[1] = (uint32_t) measure_col_cnt;
