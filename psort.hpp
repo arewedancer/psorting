@@ -38,12 +38,13 @@ struct Functor {
 	inline bool operator() (const double* a, const double* b) const { 
 		for (int i = 0; i < dim_cols.size(); ++i )
 		{
-			if (is_null(a[dim_cols[i]]) ^ is_null(b[dim_cols[i]]) )
-				return is_null(a[dim_cols[i]]) ? true : false;
+			long *c = (long *)a; long *d = (long *)b;
+			if (is_null(c[dim_cols[i]]) ^ is_null(d[dim_cols[i]]) )
+				return is_null(c[dim_cols[i]]) ? true : false;
 
-			if ( a[dim_cols[i]] == b[dim_cols[i]]) continue;
+			if ( c[dim_cols[i]] == d[dim_cols[i]]) continue;
 			//always sort partitions ascending
-			return (a[dim_cols[i]] > b[dim_cols[i]]); 
+			return (c[dim_cols[i]] > d[dim_cols[i]]); 
 		}
 
 		for (int i = 0; i < measure_cols.size(); ++i)
