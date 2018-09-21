@@ -4,13 +4,16 @@ dimension values are long(8 bytes) and measure values double (8 bytes).
 long *a = 1; // 0x0001
 double *b = 1; // 0x3fff
 Derefencing long value with double pointers would result very wrong calcuation.
-However sorting code treats all data as double and surprisingly outputs correct ordering.
-Reason is IEEE 754 double precision standard: lower 0- 51 bits are signifant. And signifcant
-numbers preserve the same ordering as long values. Since dimension values are never over
-pow(2, 51). Sorting actually works.
-After switching over to long comparison, we observe a 100+ performance boost.
 
-Intel x86_64 typically integrates FPU(floating point unit) with SIMD and instructions for double comparisons are: movsd, comisd vs long comparisons: mov, cmp
+Sorting long values with double *
+However sorting code treats all data as double and surprisingly outputs correct ordering.
+Reason is IEEE 754 double precision standard: lower 0- 51 bits are significand. And significand
+numbers preserve the same ordering as long values (sign and exponent fields are zero).
+Since dimension values are never over pow(2, 51), sorting actually works.
+After switching over to long comparisons, we observe a 100~+ performance boost.
+
+Why
+Intel x86_64 typically integrates FPU(floating point unit) with SIMD and instructions for double comparisons are: MOVSD, COMISD vs long comparisons: MOV, CMP
 where: movsd, mov cost about same number of clock cycles, movsd half the throughput
 but comisd twice of clock cycles cmp, and half the throughput of cmp
 (https://software.intel.com/sites/default/files/managed/9e/bc/64-ia-32-architectures-optimization-manual.pdf)
